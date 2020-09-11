@@ -22,9 +22,8 @@ import (
 	"path/filepath"
 	"sync"
 	"sync/atomic"
+	"time"
 )
-
-import "time"
 
 const FilePathSeparator = string(filepath.Separator)
 
@@ -275,6 +274,18 @@ func (f *File) WriteString(s string) (ret int, err error) {
 
 func (f *File) Info() *FileInfo {
 	return &FileInfo{f.fileData}
+}
+
+func (f *File) Map() ([]byte, error) {
+	f.fileData.Lock()
+	defer f.fileData.Unlock()
+
+	if f.closed {
+		return nil, ErrFileClosed
+	}
+
+	b := f.fileData.data
+	return b, nil
 }
 
 type FileInfo struct {
